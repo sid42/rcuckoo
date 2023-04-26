@@ -24,21 +24,24 @@ impl Cuckoo {
         }
     }
 
-    // should suport byte array
     pub fn insert(&mut self, x: &[u8]) -> bool {
         let mut rng = rand::thread_rng();
-        let mut f = hash(x) as u8; 
-        let i1 = hash(x) % self.m;
-        let i2 = i1 ^ hash(&[f]) % self.m;
+        let f = hash(x) as u8; 
+        let i1 = hash(x).rem_euclid(self.m);
+        let i2 = (i1 ^ hash(&[f])).rem_euclid(self.m);
+        println!("i1 {} {}", i1, i1 as usize); 
+        println!("i2 {} {}", i2, i2 as usize); 
 
         if self.buckets[i1 as usize].insert(f) || self.buckets[i2 as usize].insert(f) {
             return true;
         }
 
+        println!("could not insert, need to vacate");
         let mut i = [i1, i2][rng.gen_range(0..2)];
         for _ in 0..self.max_kicks {
-            let mut e = self.buckets[i as usize].swap(f);
-            i = i ^ hash(&[e]);
+            let e = self.buckets[i as usize].swap(f);
+            i = (i ^ hash(&[e])).rem_euclid(self.m);
+            println!("i {} {}", i, i as usize); 
             if self.buckets[i as usize].insert(e) {
                 return true;
             }
@@ -49,16 +52,16 @@ impl Cuckoo {
 
     pub fn exists(&self, x: &[u8]) -> bool {
         let f = hash(x) as u8;
-        let i1 = hash(x) % self.m;
-        let i2 = i1 ^ hash(&[f]) % self.m;
+        let i1 = hash(x).rem_euclid(self.m);
+        let i2 = (i1 ^ hash(&[f])).rem_euclid(self.m);
 
         return self.buckets[i1 as usize].lookup(f) || self.buckets[i2 as usize].lookup(f);
     }
 
     pub fn delete(&mut self, x: &[u8]) -> bool {
         let f = hash(x) as u8;
-        let i1 = hash(x) % self.m;
-        let i2 = i1 ^ hash(&[f]) % self.m;
+        let i1 = hash(x).rem_euclid(self.m);
+        let i2 = (i1 ^ hash(&[f])).rem_euclid(self.m);
         
         if self.buckets[i1 as usize].lookup(f) {
             return self.buckets[i1 as usize].delete(f);

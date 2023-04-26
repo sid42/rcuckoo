@@ -7,18 +7,19 @@ pub struct Bucket {
 impl Bucket {
     pub fn new(bucket_size: i32) -> Self {
         Self {
-            entries: vec![0; bucket_size as usize],
+            entries: vec![0;0],
             b: bucket_size,
         }
     }
 
     pub fn insert(&mut self, f: u8) -> bool {
         if self.entries.len() >= self.b as usize {
+            println!("entries len is greater than b {} {}", self.entries.len(), self.b);
             return false;
         } 
 
         self.entries.insert(0, f);
-        return true
+        true
     }
 
     pub fn lookup(&self, f: u8) -> bool {
@@ -40,13 +41,13 @@ impl Bucket {
         return false
     }
 
-    pub fn get(self, f: u8) {
+    // pub fn get(self, f: u8) {
 
-    }
+    // }
 
     pub fn swap(&mut self, f: u8) -> u8 {
         let e = self.entries.swap_remove(0);
         self.entries.insert(0, f);
-        return e
+        e
     }
 }
