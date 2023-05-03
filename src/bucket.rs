@@ -14,7 +14,6 @@ impl Bucket {
 
     pub fn insert(&mut self, f: u8) -> bool {
         if self.entries.len() >= self.b as usize {
-            println!("entries len is greater than b {} {}", self.entries.len(), self.b);
             return false;
         } 
 
@@ -40,10 +39,6 @@ impl Bucket {
         }
         return false
     }
-
-    // pub fn get(self, f: u8) {
-
-    // }
 
     pub fn swap(&mut self, f: u8) -> u8 {
         let e = self.entries.swap_remove(0);

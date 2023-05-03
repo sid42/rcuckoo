@@ -24,14 +24,14 @@ impl Cuckoo {
         }
     }
 
-    pub fn insert(&mut self, x: &[u8]) -> bool {
+    pub fn insert(&mut self, x: &[u8]) -> Result<(), &str> {
         let mut rng = rand::thread_rng();
         let f = hash(x) as u8; 
         let i1 = hash(x).rem_euclid(self.num_buckets);
         let i2 = (i1 ^ hash(&[f])).rem_euclid(self.num_buckets);
 
         if self.buckets[i1 as usize].insert(f) || self.buckets[i2 as usize].insert(f) {
-            return true;
+            return Ok(());
         }
 
         let mut i = [i1, i2][rng.gen_range(0..2)];
@@ -40,11 +40,11 @@ impl Cuckoo {
             i = (i ^ hash(&[e])).rem_euclid(self.num_buckets);
             println!("i {} {}", i, i as usize); 
             if self.buckets[i as usize].insert(e) {
-                return true;
+                return Ok(());
             }
         }
 
-        return false;
+        return Err("Table full, need to rehash");
     }
 
     pub fn exists(&self, x: &[u8]) -> bool {
@@ -55,18 +55,20 @@ impl Cuckoo {
         return self.buckets[i1 as usize].lookup(f) || self.buckets[i2 as usize].lookup(f);
     }
 
-    pub fn delete(&mut self, x: &[u8]) -> bool {
+    pub fn delete(&mut self, x: &[u8]) -> Result<(), &str> {
         let f = hash(x) as u8;
         let i1 = hash(x).rem_euclid(self.num_buckets);
         let i2 = (i1 ^ hash(&[f])).rem_euclid(self.num_buckets);
         
         if self.buckets[i1 as usize].lookup(f) {
-            return self.buckets[i1 as usize].delete(f);
+            self.buckets[i1 as usize].delete(f);
+            return Ok(());
         } else if self.buckets[i2 as usize].lookup(f) {
-            return self.buckets[i2 as usize].delete(f);
+            self.buckets[i2 as usize].delete(f);
+            return Ok(());
         }
 
-        return false
+        return Err("Deletion failed");
     }
 
 }
