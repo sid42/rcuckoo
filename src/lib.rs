@@ -38,7 +38,6 @@ impl Cuckoo {
         for _ in 0..self.max_kicks {
             let e = self.buckets[i as usize].swap(f);
             i = (i ^ hash(&[e])).rem_euclid(self.num_buckets);
-            println!("i {} {}", i, i as usize); 
             if self.buckets[i as usize].insert(e) {
                 return Ok(());
             }
